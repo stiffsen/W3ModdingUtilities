@@ -87,22 +87,20 @@ def GenerateDummyTranslations(srcFilepath: str, dstPath = None):
     
     
 def EncodeAllCsv(srcPath: str, idspace: int, dstPath: str = None):
-    
+       
     if dstPath is None:
         dstPath = os.path.join(srcPath, '..', 'content')
-    else:
-        os.makedirs(dstPath, exist_ok=True)
-        
+    os.makedirs(dstPath, exist_ok=True)
+    
     csvFiles = [file for file in os.listdir(srcPath) if file.endswith('.csv')]
     for csv in csvFiles:
-        abspathSrc = os.path.join(srcPath, csv)
+        abspathSrc = os.path.join(srcPath, csv)        
         os.system(f'w3strings.exe --encode "{abspathSrc}" --id-space {idspace}')
         
         dstFile = csv[:csv.find('.')] + '.w3strings'
         shutil.move(abspathSrc+'.w3strings', os.path.join(dstPath, dstFile))
         
         os.remove(abspathSrc + '.w3strings.ws')
-    
     
     
 def DecodeAllW3strings(srcPath: str, dstPath: str = None):
@@ -163,21 +161,27 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     #%% Execute
+    try:
+        def GetIdSpace() -> int:
+            return args.idspace if args.idspace else int(input('Enter id-space (Mod id on NexusMods): '))
+        
+        if args.GenerateDummyLocalizations:
+            GenerateDummyTranslations(args.GenerateDummyLocalizations.strip('\"'), args.OutputPath.strip('\"') if args.OutputPath else None)
+            
+        elif args.Encode:
+            EncodeAllCsv(args.Encode.strip('\"'), GetIdSpace(), args.OutputPath.strip('\"') if args.OutputPath else None)
+            
+        elif args.Decode:
+            DecodeAllW3strings(args.Decode.strip('\"'), args.OutputPath.strip('\"') if args.OutputPath else None)
+            
+        elif args.CreateNew:
+            CreateEmptyCsv(args.CreateNew.strip('\"'), GetIdSpace(), args.NumStringRows, args.LanguageId)
+            
+        else:
+            print('No command issued...')
+            
+    except Exception as e:
+        print(e)
+
+    input('Press ENTER to exit...')
     
-    def GetIdSpace() -> int:
-        return args.idspace if args.idspace else int(input('Enter id-space (Mod id on NexusMods): '))
-    
-    if args.GenerateDummyLocalizations:
-        GenerateDummyTranslations(args.GenerateDummyLocalizations, args.OutputPath)
-        
-    elif args.Encode:
-        EncodeAllCsv(args.Encode, GetIdSpace(), args.OutputPath)
-        
-    elif args.Decode:
-        DecodeAllW3strings(args.Decode, args.OutputPath)
-        
-    elif args.CreateNew:
-        CreateEmptyCsv(args.CreateNew, GetIdSpace(), args.NumStringRows, args.LanguageId)
-        
-    else:
-        print('No command issued...')
