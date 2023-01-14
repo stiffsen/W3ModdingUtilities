@@ -14,13 +14,18 @@ def PackageMod(srcPath: str, dstPath: str, lstIgnoredFilePatterns: list = None):
     
     print(f'\nPackaging: {srcPath}')
     
+    srcPath = srcPath.strip('\"')
     basePath,modName = os.path.split(srcPath)
     
     if not modName.lower().startswith('mod'):
         raise ValueError('Mod folder does not start with "mod"')
     
+    dstPath = dstPath.strip('\"')
+    dstPath = os.path.expandvars(dstPath)
+    os.makedirs(dstPath, exist_ok = True)
+    
     now = datetime.now().strftime("_%Y-%m-%d_%H%M%S")
-    zipPath = os.path.join(os.path.expandvars(dstPath), modName+now+'.zip')
+    zipPath = os.path.join(dstPath, modName+now+'.zip')
     
     print(f'Destination: {zipPath}')   
     
@@ -73,7 +78,7 @@ if __name__ == '__main__':
     
     try:
         PackageMod(args.PATH_SRC, args.DestPath, args.IgnoredFilePatterns)
-    except ValueError as e:
+    except Exception as e:
         print(e)
     
     input('Press Enter to exit...')
